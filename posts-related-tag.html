@@ -1,0 +1,57 @@
+{% comment %}
+  Shows actual related posts (by tag) and then most recent posts, only if there
+  are no more posts under that specific tag.
+  The behavior can be adapted from tags to categories by only the following
+  lines in this file: 16, 17, 40 &41
+{% endcomment %}
+
+{% assign RELATED_POSTS_THRESHOLD = 3 %}
+
+<ul>
+  {% assign related_post_count = 0 %}
+  {% for post in site.related_posts %}
+    {% if related_post_count == RELATED_POSTS_THRESHOLD %}
+      {% break %}
+    {% endif %}
+    {% for tag in post.tags %}
+      {% if page.tags contains tag %}
+        <li>
+          <h3>
+            <a href="{{ site.baseurl }}{{ post.url }}">
+              {{ post.title }}
+              <small>{{ post.date | date_to_string }}</small>
+            </a>
+          </h3>
+        </li>
+        {% assign related_post_count = related_post_count | plus: 1 %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+
+  {% unless related_post_count == RELATED_POSTS_THRESHOLD %}
+    {% capture posts_left %}{{ RELATED_POSTS_THRESHOLD | minus: related_post_count }}{% endcapture %}
+    {% for post in site.related_posts %}
+      {% if posts_left == 0 %}
+        {% break %}
+      {% endif %}
+      {% assign already_related = false %}
+      {% for tag in post.tags %}
+        {% if page.tags contains tag %}
+          {% assign already_related = true %}
+        {% endif %}
+      {% endfor %}
+      {% unless already_related == true %}
+        {% assign posts_left = posts_left | minus: 1 %}
+        <li>
+          <h3>
+            <a href="{{ site.baseurl }}{{ post.url }}">
+              {{ post.title }}
+              <small>{{ post.date | date_to_string }}</small>
+            </a>
+          </h3>
+        </li>
+      {% endunless %}
+    {% endfor %}
+  {% endunless %}
+</ul>
